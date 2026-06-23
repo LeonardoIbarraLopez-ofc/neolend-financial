@@ -1,5 +1,17 @@
 import { Kafka, type Producer, type Consumer } from 'kafkajs';
-import type { EventEnvelope } from '@neolend/ts-events';
+
+/**
+ * Forma mínima del sobre estándar que necesita el bus (la definición completa
+ * vive en @neolend/ts-events). Se mantiene local para no acoplar las libs.
+ */
+export interface EventEnvelope<T = unknown> {
+  eventId: string;
+  eventType: string;
+  correlationId: string;
+  producer: string;
+  payload: T;
+  [key: string]: unknown;
+}
 
 /**
  * Cliente compartido del bus de eventos (Redpanda, API Kafka).

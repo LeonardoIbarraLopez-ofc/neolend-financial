@@ -1,0 +1,10 @@
+{
+  "name": "@neolend/bureau-soap-mock",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mock del buró SOAP (latencia 8-15s, 10rps, fallos intermitentes).",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"(mock, sin tests)\" && exit 0"
+  }
+}

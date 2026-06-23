@@ -17,11 +17,15 @@
     "@nestjs/platform-express": "^10.3.0",
     "@neolend/ts-common": "workspace:*",
     "@neolend/ts-events": "workspace:*",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "pg": "^8.11.3",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@types/pg": "^8.11.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.0"
   }

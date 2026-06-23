@@ -76,8 +76,10 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgres://gateway_origination:svc_pw@postgres:5432/origination_db
+      SCORING_URL: http://scoring-svc:8102
+      CREDIT_URL: http://credit-svc:8103
+    # El "gateway" (borde) es el módulo de este servicio; escucha en 8101.
     ports:
-      - '8080:8080'
       - '8101:8101'
     depends_on:
       postgres: { condition: service_healthy }
@@ -142,6 +144,8 @@ services:
   # ---------- Frontend ----------
   web-portal:
     build: ./clients/web-portal
+    environment:
+      VITE_GATEWAY_URL: http://gateway-origination-svc:8101
     ports:
       - '5173:5173'
     depends_on:

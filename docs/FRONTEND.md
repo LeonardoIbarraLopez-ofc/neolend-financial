@@ -1,7 +1,7 @@
 # Documentación del Frontend — NeoLend Financial Corp.
 
 > **Especificación funcional y técnica del cliente web (`clients/web-portal`)**
-> Complementa a [PROPUESTA-TECNICA.md](../PROPUESTA-TECNICA.md), [DISENO-BASES-DE-DATOS.md](../DISENO-BASES-DE-DATOS.md) y [PLAN-DE-TRABAJO.md](../PLAN-DE-TRABAJO.md)
+> Complementa a [PROPUESTA-TECNICA.md](PROPUESTA-TECNICA.md), [DISENO-BASES-DE-DATOS.md](DISENO-BASES-DE-DATOS.md) y [PLAN-DE-TRABAJO.md](PLAN-DE-TRABAJO.md)
 > Versión 1.0 — Hackatón Final 16/06/2026
 > Stack: **React + Vite + TypeScript** · **100% local y gratuito** · Responsable: **D1**
 
@@ -293,7 +293,7 @@ VITE_WS_URL=http://localhost:8105
 
 ## 8. Integración con el flujo de trabajo (alineación con el plan)
 
-- **Dueño:** **D1** (Frontend + investor-svc), según [PLAN-DE-TRABAJO.md §1](../PLAN-DE-TRABAJO.md).
+- **Dueño:** **D1** (Frontend + investor-svc), según [PLAN-DE-TRABAJO.md §1](PLAN-DE-TRABAJO.md).
 - **Fase 0:** D1 define los contratos que necesita del gateway/investor y levanta **mocks Prism**; arranca la UI sin esperar backend.
 - **Construcción por fase (prioridad rúbrica):**
   - **Fase 1 (MVP 1):** Login + Wizard de solicitud + Estado de solicitud + (analista) Detalle con SHAP.
