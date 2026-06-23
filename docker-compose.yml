@@ -144,12 +144,9 @@ services:
   # ---------- Frontend ----------
   web-portal:
     build: ./clients/web-portal
-    environment:
-      VITE_GATEWAY_URL: http://gateway-origination-svc:8101
     ports:
       - '5173:5173'
+    environment:
+      VITE_GATEWAY_URL: http://gateway-origination-svc:8101
     depends_on:
       - gateway-origination-svc
-
-volumes:
-  pgdata:
