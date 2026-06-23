@@ -1,0 +1,151 @@
+# ============================================================
+#  NeoLend Financial — Entorno LOCAL completo (gratuito)
+#  Arranque:  docker compose up -d
+#  Requiere:  Docker Desktop. Sin cuentas ni API keys de pago.
+# ============================================================
+name: neolend
+
+services:
+  # ---------- Infraestructura ----------
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-neolend}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-neolend_local_pw}
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-neolend}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Redpanda = bus de eventos compatible con la API de Kafka (liviano para local)
+  redpanda:
+    image: redpandadata/redpanda:v24.1.1
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --memory=512M
+      - --overprovisioned
+      - --node-id=0
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092
+    ports:
+      - '9092:9092'
+    healthcheck:
+      test: ['CMD-SHELL', 'rpk cluster health | grep -q "Healthy:.*true"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---------- Mocks locales (sustituyen proveedores externos) ----------
+  bureau-soap-mock:
+    build: ./mocks/bureau-soap-mock
+    ports:
+      - '9101:9101'
+
+  wallet-mock:
+    build: ./mocks/wallet-mock
+    ports:
+      - '9102:9102'
+
+  whatsapp-mock:
+    build: ./mocks/whatsapp-mock
+    ports:
+      - '9103:9103'
+
+  # ---------- Microservicios (1..6) ----------
+  gateway-origination-svc:
+    build: ./services/gateway-origination-svc
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://gateway_origination:svc_pw@postgres:5432/origination_db
+    ports:
+      - '8080:8080'
+      - '8101:8101'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redpanda: { condition: service_healthy }
+
+  scoring-svc:
+    build: ./services/scoring-svc
+    env_file: .env
+    ports:
+      - '8102:8102'
+    depends_on:
+      redis: { condition: service_healthy }
+      redpanda: { condition: service_healthy }
+
+  credit-svc:
+    build: ./services/credit-svc
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://credit:svc_pw@postgres:5432/credit_db
+    ports:
+      - '8103:8103'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redpanda: { condition: service_healthy }
+
+  servicing-svc:
+    build: ./services/servicing-svc
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://servicing:svc_pw@postgres:5432/servicing_db
+    ports:
+      - '8104:8104'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redpanda: { condition: service_healthy }
+
+  investor-svc:
+    build: ./services/investor-svc
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://investor:svc_pw@postgres:5432/investor_db
+    ports:
+      - '8105:8105'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redpanda: { condition: service_healthy }
+
+  compliance-svc:
+    build: ./services/compliance-svc
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://compliance:svc_pw@postgres:5432/compliance_db
+    volumes:
+      - ./keys:/keys:ro
+      - ./worm:/worm
+    ports:
+      - '8106:8106'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redpanda: { condition: service_healthy }
+
+  # ---------- Frontend ----------
+  web-portal:
+    build: ./clients/web-portal
+    ports:
+      - '5173:5173'
+    depends_on:
+      - gateway-origination-svc
+
+volumes:
+  pgdata:

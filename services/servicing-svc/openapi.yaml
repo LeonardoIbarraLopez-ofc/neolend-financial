@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: servicing-svc
+  version: 0.1.0
+  description: Cobranza + Notificaciones + Gamificación (incisos V, VIII).
+servers:
+  - url: http://localhost:8104/v1
+paths:
+  /collections/cases:
+    get:
+      summary: Casos de cobranza por estado de mora
+      responses: { '200': { description: casos } }
+  /collections/cases/{id}/reminders:
+    post:
+      summary: Programa recordatorio (WhatsApp/SMS/email)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '202': { description: programado } }
+  /collections/cases/{id}/agreements:
+    post:
+      summary: Crea acuerdo de pago / reestructuración
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '201': { description: acuerdo } }
+  /notifications:
+    post:
+      summary: Envía notificación omnicanal
+      responses: { '202': { description: encolada } }
+  /courses:
+    get:
+      summary: Lista cursos de educación financiera
+      responses: { '200': { description: cursos } }
+  /users/{id}/courses/{courseId}/complete:
+    post:
+      summary: Completa curso → otorga puntos + bonus de tasa
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: courseId, in: path, required: true, schema: { type: string } }
+      responses: { '200': { description: recompensa } }

@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: credit-svc
+  version: 0.1.0
+  description: Decisión + Crédito (CQRS+ES) + Desembolso + Ledger (incisos III, IV).
+servers:
+  - url: http://localhost:8103/v1
+paths:
+  /credits/decision:
+    post:
+      summary: Decide auto (≤500) / manual / rechazo a partir del score
+      responses: { '200': { description: decisión } }
+  /credits/decisions/queue/manual:
+    get:
+      summary: Cola de revisión manual (analista)
+      responses: { '200': { description: cola } }
+  /credits/{id}:
+    get:
+      summary: Proyección del crédito (read model)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: estado } }
+  /credits/{id}/events:
+    get:
+      summary: Stream de eventos del agregado (auditoría)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: eventos } }
+  /credits/{id}/disbursements:
+    post:
+      summary: Desembolso idempotente (Idempotency-Key)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '201': { description: desembolso } }

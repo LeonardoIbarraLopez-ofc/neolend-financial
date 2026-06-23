@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: compliance-svc
+  version: 0.1.0
+  description: Auditoría inmutable + Firma digital + Reportes al regulador (MVP 4).
+servers:
+  - url: http://localhost:8106/v1
+paths:
+  /sign:
+    post:
+      summary: Firma un payload (JWS) — usado por credit-svc
+      responses: { '200': { description: jws } }
+  /verify:
+    post:
+      summary: Verifica una firma JWS
+      responses: { '200': { description: verificación } }
+  /audit/records/{correlationId}:
+    get:
+      summary: Trazabilidad completa de una solicitud
+      parameters: [{ name: correlationId, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: registros } }
+  /audit/verify/{recordId}:
+    get:
+      summary: Verifica integridad de la cadena de hash
+      parameters: [{ name: recordId, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: integridad } }
+  /reports/scoring-traceability:
+    post:
+      summary: Genera export auditable firmado (rango de fechas)
+      responses: { '202': { description: encolado } }
+  /reports/bias-audit:
+    get:
+      summary: Auditoría de sesgo demográfico (mensual)
+      responses: { '200': { description: sesgo } }

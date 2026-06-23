@@ -1,0 +1,22 @@
+{
+  "name": "@neolend/ts-common",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "echo \"(sin tests aún)\" && exit 0"
+  },
+  "dependencies": {
+    "pino": "^9.0.0"
+  },
+  "peerDependencies": {
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0",
+    "kafkajs": "^2.2.4"
+  }
+}

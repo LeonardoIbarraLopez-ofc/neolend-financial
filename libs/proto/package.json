@@ -1,0 +1,9 @@
+{
+  "name": "@neolend/proto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Esquemas de eventos (JSON-Schema) — fuente de verdad del contrato de eventos.",
+  "scripts": {
+    "test": "echo \"(validación de esquemas en contract-check)\" && exit 0"
+  }
+}

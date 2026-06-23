@@ -1,0 +1,32 @@
+# ============================================================
+#  CODEOWNERS — un dueño por servicio (ver PLAN-DE-TRABAJO.md §6.2)
+#  Reemplazar @D1..@D6 por los usuarios reales de GitHub.
+# ============================================================
+
+# D1 — Frontend + Inversionista
+/clients/                          @D1
+/services/investor-svc/            @D1
+
+# D2 — Originación & Identidad
+/services/gateway-origination-svc/ @D2
+
+# D3 — Scoring (ML)
+/services/scoring-svc/             @D3
+
+# D4 — Crédito & Dinero
+/services/credit-svc/              @D4
+
+# D5 — Servicing (cobranza, notificaciones, gamificación)
+/services/servicing-svc/           @D5
+
+# D6 — Plataforma & Compliance (guardián de la uniformidad)
+/services/compliance-svc/          @D6
+/libs/                             @D6
+/gateway/                          @D6
+/mocks/                            @D6
+/infra/                            @D6
+/.github/                          @D6
+/docker-compose.yml                @D6
+/package.json                      @D6
+/.eslintrc.json                    @D6
+/.prettierrc                       @D6

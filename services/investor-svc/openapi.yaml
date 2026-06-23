@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: investor-svc
+  version: 0.1.0
+  description: Portal de inversionistas en tiempo real (inciso VI).
+servers:
+  - url: http://localhost:8105/v1
+paths:
+  /portfolio/metrics:
+    get:
+      summary: KPIs de cartera (TIR, PAR30/90, morosidad por segmento)
+      responses: { '200': { description: métricas } }
+  /portfolio/cashflow/projection:
+    get:
+      summary: Flujo de caja proyectado
+      responses: { '200': { description: proyección } }
+  /funds/{fundId}/exposure:
+    get:
+      summary: Exposición al riesgo del fondo
+      parameters: [{ name: fundId, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: exposición } }
+# WebSocket: /v1/portfolio/stream (socket.io) — actualización en vivo.

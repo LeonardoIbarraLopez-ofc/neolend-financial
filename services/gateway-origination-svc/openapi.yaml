@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: gateway-origination-svc
+  version: 0.1.0
+  description: Gateway + Identidad/KYC + Saga de originación (inciso I).
+servers:
+  - url: http://localhost:8101/v1
+paths:
+  /auth/login:
+    post:
+      summary: Emite un JWT
+      responses: { '200': { description: token } }
+  /applicants:
+    post:
+      summary: Crea solicitante
+      responses: { '201': { description: creado } }
+  /applicants/{id}/document:
+    post:
+      summary: Sube documento (multipart) y dispara OCR (mock)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: OCR ok } }
+  /loan-applications:
+    post:
+      summary: Inicia solicitud de crédito (Saga)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [applicantId, requestedAmount, termMonths]
+              properties:
+                applicantId: { type: string, format: uuid }
+                requestedAmount: { type: number }
+                currency: { type: string, default: USD }
+                termMonths: { type: integer }
+      responses:
+        '202': { description: en proceso }
+  /loan-applications/{id}:
+    get:
+      summary: Estado + progreso (timeline)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: estado } }

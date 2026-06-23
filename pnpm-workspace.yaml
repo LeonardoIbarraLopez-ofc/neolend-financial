@@ -1,0 +1,10 @@
+packages:
+  - 'libs/*'
+  - 'services/gateway-origination-svc'
+  - 'services/credit-svc'
+  - 'services/servicing-svc'
+  - 'services/investor-svc'
+  - 'services/compliance-svc'
+  - 'clients/web-portal'
+  - 'mocks/*'
+# NOTA: services/scoring-svc usa Python (Poetry/pip), no forma parte del workspace pnpm.

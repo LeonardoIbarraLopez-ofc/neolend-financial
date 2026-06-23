@@ -1,0 +1,55 @@
+# ---- Node / TypeScript ----
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.npm/
+.pnpm-store/
+.eslintcache
+
+# ---- Python (scoring-svc) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# ---- Env / secrets (NUNCA commitear secretos reales) ----
+.env
+.env.*
+!.env.example
+keys/*.pem
+keys/*.key
+
+# ---- Compliance: bitácora WORM local (no versionar evidencia de runtime) ----
+worm/*
+!worm/.gitkeep
+
+# ---- Docker / data volumes ----
+docker-data/
+*.pid
+
+# ---- IDE / OS ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Logs ----
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# ---- Frontend (Vite) ----
+clients/web-portal/dist/
+.vite/
+
+# ---- Evidencia generada (mantener carpeta, no binarios pesados generados) ----
+# docs/evidence se versiona; aquí solo se ignoran temporales
+docs/evidence/*.tmp

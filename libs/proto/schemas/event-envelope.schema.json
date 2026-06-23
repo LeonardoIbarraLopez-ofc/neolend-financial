@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://neolend.local/schemas/event-envelope.schema.json",
+  "title": "EventEnvelope",
+  "description": "Sobre estándar de todo evento del bus (PLAN-DE-TRABAJO.md §4.1).",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "schemaVersion",
+    "payload"
+  ],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "type": "string" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "type": "string", "format": "uuid" },
+    "causationId": { "type": "string", "format": "uuid" },
+    "producer": { "type": "string" },
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": false
+}
