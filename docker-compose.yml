@@ -167,7 +167,8 @@ services:
     environment:
       DATABASE_URL: postgres://compliance:svc_pw@postgres:5432/compliance_db
     volumes:
-      - ./keys:/keys:ro
+      # Lectura-escritura: compliance-svc autogenera el par RSA de firma si no existe.
+      - ./keys:/keys
       - ./worm:/worm
     ports:
       - '8106:8106'

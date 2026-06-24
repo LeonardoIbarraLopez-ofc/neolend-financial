@@ -2,12 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist",
-    "baseUrl": "../../",
-    "paths": {
-      "@neolend/ts-common": ["libs/ts-common/src"],
-      "@neolend/ts-events": ["libs/ts-events/src"]
-    }
+    "outDir": "dist"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.spec.ts"]
 }

@@ -1,10 +1,22 @@
 import { Kafka, type Producer, type Consumer } from 'kafkajs';
 
 /**
- * Restricción mínima: el bus solo necesita el correlationId para particionar.
- * El tipo concreto del sobre vive en @neolend/ts-events; usando un genérico se
- * evita acoplar ts-common con ts-events y se acepta cualquier envelope válido.
+ * Sobre estándar de evento (forma genérica). La definición canónica vive en
+ * @neolend/ts-events; se exporta aquí también para consumidores que solo
+ * dependen de ts-common, sin acoplar las libs entre sí.
  */
+export interface EventEnvelope<T = unknown> {
+  eventId: string;
+  eventType: string;
+  correlationId: string;
+  producer: string;
+  occurredAt?: string;
+  causationId?: string;
+  schemaVersion?: number;
+  payload: T;
+}
+
+/** Restricción mínima: el bus solo necesita el correlationId para particionar. */
 type WithCorrelation = { correlationId: string };
 
 /**

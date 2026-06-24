@@ -9,7 +9,8 @@
       "Bash(find services/gateway-origination-svc/dist -name \"main.js\")",
       "Bash(ls services/gateway-origination-svc/dist)",
       "Bash(bash /tmp/e2e.sh)",
-      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);v=json.loads\\(d['value']\\);print\\(' eventType:',v['eventType'],'| producer:',v['producer'],'| correlationId:',v['correlationId']\\)\")"
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);v=json.loads\\(d['value']\\);print\\(' eventType:',v['eventType'],'| producer:',v['producer'],'| correlationId:',v['correlationId']\\)\")",
+      "Bash(curl -s -m 4 localhost:8106/health)"
     ]
   }
 }
