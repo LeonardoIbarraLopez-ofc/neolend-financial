@@ -56,23 +56,31 @@ services:
 
   # ---------- Mocks locales (sustituyen proveedores externos) ----------
   bureau-soap-mock:
-    build: ./mocks/bureau-soap-mock
+    build:
+      context: .
+      dockerfile: ./mocks/bureau-soap-mock/Dockerfile
     ports:
       - '9101:9101'
 
   wallet-mock:
-    build: ./mocks/wallet-mock
+    build:
+      context: .
+      dockerfile: ./mocks/wallet-mock/Dockerfile
     ports:
       - '9102:9102'
 
   whatsapp-mock:
-    build: ./mocks/whatsapp-mock
+    build:
+      context: .
+      dockerfile: ./mocks/whatsapp-mock/Dockerfile
     ports:
       - '9103:9103'
 
   # ---------- Microservicios (1..6) ----------
   gateway-origination-svc:
-    build: ./services/gateway-origination-svc
+    build:
+      context: .
+      dockerfile: ./services/gateway-origination-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://gateway_origination:svc_pw@postgres:5432/origination_db
@@ -86,7 +94,9 @@ services:
       redpanda: { condition: service_healthy }
 
   scoring-svc:
-    build: ./services/scoring-svc
+    build:
+      context: .
+      dockerfile: ./services/scoring-svc/Dockerfile
     env_file: .env
     ports:
       - '8102:8102'
@@ -95,7 +105,9 @@ services:
       redpanda: { condition: service_healthy }
 
   credit-svc:
-    build: ./services/credit-svc
+    build:
+      context: .
+      dockerfile: ./services/credit-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://credit:svc_pw@postgres:5432/credit_db
@@ -106,7 +118,9 @@ services:
       redpanda: { condition: service_healthy }
 
   servicing-svc:
-    build: ./services/servicing-svc
+    build:
+      context: .
+      dockerfile: ./services/servicing-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://servicing:svc_pw@postgres:5432/servicing_db
@@ -117,7 +131,9 @@ services:
       redpanda: { condition: service_healthy }
 
   investor-svc:
-    build: ./services/investor-svc
+    build:
+      context: .
+      dockerfile: ./services/investor-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://investor:svc_pw@postgres:5432/investor_db
@@ -128,7 +144,9 @@ services:
       redpanda: { condition: service_healthy }
 
   compliance-svc:
-    build: ./services/compliance-svc
+    build:
+      context: .
+      dockerfile: ./services/compliance-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://compliance:svc_pw@postgres:5432/compliance_db
@@ -143,10 +161,16 @@ services:
 
   # ---------- Frontend ----------
   web-portal:
-    build: ./clients/web-portal
+    build:
+      context: .
+      dockerfile: ./clients/web-portal/Dockerfile
     ports:
       - '5173:5173'
     environment:
       VITE_GATEWAY_URL: http://gateway-origination-svc:8101
     depends_on:
       - gateway-origination-svc
+
+# ---------- Volúmenes persistentes ----------
+volumes:
+  pgdata:
