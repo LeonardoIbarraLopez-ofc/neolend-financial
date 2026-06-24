@@ -7,4 +7,9 @@ export class HealthController {
   health() {
     return buildHealth('investor-svc');
   }
+
+  @Get()
+  index() {
+    return { status: 'OK', message: 'NeoLend Investor Service (investor-svc) is active' };
+  }
 }

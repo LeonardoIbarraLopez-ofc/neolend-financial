@@ -1,0 +1,10 @@
+{
+  "name": "@neolend/wallet-mock",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mock de billeteras/bancos/corresponsales para desembolso.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"(mock, sin tests)\" && exit 0"
+  }
+}

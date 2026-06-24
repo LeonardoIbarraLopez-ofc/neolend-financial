@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InvestorMetrics } from '../types';
-import { TrendingUp, AlertCircle, ShieldAlert, Award, Activity, Database, Check, RefreshCw } from 'lucide-react';
+import { TrendingUp, AlertCircle, ShieldAlert, Award, Activity, Database, RefreshCw } from 'lucide-react';
+import { io } from 'socket.io-client';
 
 interface InvestorPortalProps {
   metrics: InvestorMetrics;
@@ -9,8 +10,72 @@ interface InvestorPortalProps {
 }
 
 export default function InvestorPortal({ metrics, onRefresh, networkSettings }: InvestorPortalProps) {
-  const [wsStatus, setWsStatus] = useState<'connected' | 'reconnecting'>('connected');
+  const [wsStatus, setWsStatus] = useState<'connected' | 'reconnecting'>('reconnecting');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [liveMetrics, setLiveMetrics] = useState<InvestorMetrics>(metrics);
+
+  useEffect(() => {
+    setLiveMetrics(metrics);
+  }, [metrics]);
+
+  useEffect(() => {
+    // 1. Fetch inicial de API Real en puerto 8105 via proxy
+    const fetchRealMetrics = async () => {
+      try {
+        const res = await fetch('/v1/portfolio/metrics');
+        if (res.ok) {
+          const data = await res.json();
+          updateMetricsFromPayload(data);
+        }
+      } catch (err) {
+        // Fallback silencioso a las métricas simuladas locales
+      }
+    };
+
+    fetchRealMetrics();
+
+    // 2. Conectar a WebSocket en tiempo real de investor-svc (puerto 8105)
+    const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:8105';
+    const socket = io(`${wsUrl}/v1/portfolio/stream`, {
+      transports: ['websocket'],
+      autoConnect: true,
+      reconnectionAttempts: 5,
+    });
+
+    socket.on('connect', () => {
+      setWsStatus('connected');
+    });
+
+    socket.on('disconnect', () => {
+      setWsStatus('reconnecting');
+    });
+
+    const updateMetricsFromPayload = (data: any) => {
+      if (data && typeof data === 'object') {
+        setLiveMetrics(prev => ({
+          ...prev,
+          irr: data.irr ? data.irr * 100 : prev.irr, 
+          par30: data.par30 ? data.par30 * 100 : prev.par30,
+          par90: data.par90 ? data.par90 * 100 : prev.par90,
+          outstandingPrincipal: data.outstandingPrincipal ?? prev.outstandingPrincipal,
+          delinquencyBySegment: data.delinquencyBySegment ? {
+            A: (data.delinquencyBySegment.A ?? 0) * 100,
+            B: (data.delinquencyBySegment.B ?? 0) * 100,
+            C: (data.delinquencyBySegment.C ?? 0) * 100,
+            D: (data.delinquencyBySegment.D ?? 0) * 100,
+          } : prev.delinquencyBySegment
+        }));
+      }
+    };
+
+    socket.on('metrics.update', (data: any) => {
+      updateMetricsFromPayload(data);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const triggerWSRefresh = () => {
     setWsStatus('reconnecting');
@@ -29,7 +94,7 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
 
   // Find max value in cashFlow to scale chart
   const maxVal = Math.max(
-    ...metrics.flujoCajaProyectado.flatMap(d => [d.inflow, d.outflow]),
+    ...liveMetrics.flujoCajaProyectado.flatMap(d => [d.inflow, d.outflow]),
     100 // fallback
   );
 
@@ -54,8 +119,8 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
               {wsStatus === 'connected' 
-                ? 'Sincronizado vía WebSockets en tiempo real con Kafka & Redpanda.' 
-                : 'Reconectando con el broker de eventos...'}
+                ? 'Sincronizado vía WebSockets en tiempo real con el bus de eventos.' 
+                : 'Conexión local activa (Modo Simulación).'}
             </p>
           </div>
         </div>
@@ -67,7 +132,7 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
           className="bg-slate-800 hover:bg-slate-700 text-teal-300 font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Recargando...' : 'Reconectar WS'}
+          {isRefreshing ? 'Recargando...' : 'Actualizar métricas'}
         </button>
       </div>
 
@@ -79,7 +144,7 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">TIR de Cartera</span>
-            <div className="text-xl font-black text-slate-800 font-sans mt-0.5">{metrics.irr.toFixed(1)}%</div>
+            <div className="text-xl font-black text-slate-800 font-sans mt-0.5">{liveMetrics.irr.toFixed(1)}%</div>
           </div>
         </div>
 
@@ -89,7 +154,7 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">PAR 30 (Mora Corta)</span>
-            <div className="text-xl font-black text-slate-800 font-sans mt-0.5">{metrics.par30.toFixed(2)}%</div>
+            <div className="text-xl font-black text-slate-800 font-sans mt-0.5">{liveMetrics.par30.toFixed(2)}%</div>
           </div>
         </div>
 
@@ -99,7 +164,7 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">PAR 90 (Default)</span>
-            <div className="text-xl font-black text-slate-800 font-sans mt-0.5">{metrics.par90.toFixed(2)}%</div>
+            <div className="text-xl font-black text-slate-800 font-sans mt-0.5">{liveMetrics.par90.toFixed(2)}%</div>
           </div>
         </div>
 
@@ -110,7 +175,7 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Principal Activo</span>
             <div className="text-xl font-black text-slate-800 font-sans mt-0.5">
-              USD {metrics.outstandingPrincipal.toLocaleString()}
+              USD {liveMetrics.outstandingPrincipal.toLocaleString()}
             </div>
           </div>
         </div>
@@ -135,8 +200,8 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
               <line x1={padding} y1={chartHeight - padding} x2={chartWidth - padding} y2={chartHeight - padding} stroke="#cbd5e1" strokeWidth="1.5" />
 
               {/* Render Bars */}
-              {metrics.flujoCajaProyectado.map((d, index) => {
-                const totalItems = metrics.flujoCajaProyectado.length;
+              {liveMetrics.flujoCajaProyectado.map((d, index) => {
+                const totalItems = liveMetrics.flujoCajaProyectado.length;
                 const plotWidth = chartWidth - padding * 2;
                 const barSpacing = plotWidth / totalItems;
                 const xBase = padding + index * barSpacing + barSpacing / 4;
@@ -213,7 +278,7 @@ export default function InvestorPortal({ metrics, onRefresh, networkSettings }: 
           </div>
 
           <div className="space-y-3.5">
-            {Object.entries(metrics.delinquencyBySegment).map(([segment, value]) => {
+            {Object.entries(liveMetrics.delinquencyBySegment).map(([segment, value]) => {
               // Color depending on risk band
               const segmentColors: Record<string, string> = {
                 A: 'bg-emerald-500',

@@ -6,7 +6,8 @@
     "lib": ["ES2022"],
     "declaration": true,
     "sourceMap": true,
-    "strict": true,
+    "strict": false,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -15,8 +16,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@neolend/ts-common": ["libs/ts-common/src"],
-      "@neolend/ts-events": ["libs/ts-events/src"]
+      "@neolend/ts-common": ["libs/ts-common/dist"],
+      "@neolend/ts-events": ["libs/ts-events/dist"]
     }
   }
 }

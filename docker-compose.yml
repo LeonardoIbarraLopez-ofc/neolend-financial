@@ -72,19 +72,25 @@ services:
 
   # ---------- Microservicios (1..6) ----------
   gateway-origination-svc:
-    build: ./services/gateway-origination-svc
+    build:
+      context: .
+      dockerfile: ./services/gateway-origination-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://gateway_origination:svc_pw@postgres:5432/origination_db
+      SCORING_URL: http://scoring-svc:8102
+      CREDIT_URL: http://credit-svc:8103
+    # El "gateway" (borde) es el módulo de este servicio; escucha en 8101.
     ports:
-      - '8080:8080'
       - '8101:8101'
     depends_on:
       postgres: { condition: service_healthy }
       redpanda: { condition: service_healthy }
 
   scoring-svc:
-    build: ./services/scoring-svc
+    build:
+      context: .
+      dockerfile: ./services/scoring-svc/Dockerfile
     env_file: .env
     ports:
       - '8102:8102'
@@ -93,7 +99,9 @@ services:
       redpanda: { condition: service_healthy }
 
   credit-svc:
-    build: ./services/credit-svc
+    build:
+      context: .
+      dockerfile: ./services/credit-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://credit:svc_pw@postgres:5432/credit_db
@@ -104,7 +112,9 @@ services:
       redpanda: { condition: service_healthy }
 
   servicing-svc:
-    build: ./services/servicing-svc
+    build:
+      context: .
+      dockerfile: ./services/servicing-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://servicing:svc_pw@postgres:5432/servicing_db
@@ -115,7 +125,9 @@ services:
       redpanda: { condition: service_healthy }
 
   investor-svc:
-    build: ./services/investor-svc
+    build:
+      context: .
+      dockerfile: ./services/investor-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://investor:svc_pw@postgres:5432/investor_db
@@ -126,7 +138,9 @@ services:
       redpanda: { condition: service_healthy }
 
   compliance-svc:
-    build: ./services/compliance-svc
+    build:
+      context: .
+      dockerfile: ./services/compliance-svc/Dockerfile
     env_file: .env
     environment:
       DATABASE_URL: postgres://compliance:svc_pw@postgres:5432/compliance_db
@@ -144,6 +158,8 @@ services:
     build: ./clients/web-portal
     ports:
       - '5173:5173'
+    environment:
+      VITE_GATEWAY_URL: http://gateway-origination-svc:8101
     depends_on:
       - gateway-origination-svc
 

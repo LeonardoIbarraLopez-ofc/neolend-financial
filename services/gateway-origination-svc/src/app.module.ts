@@ -1,16 +1,23 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { HealthController } from './health.controller';
+import { DatabaseModule } from './common/database.module';
+import { CorrelationMiddleware } from './common/correlation.middleware';
+import { GatewayModule } from './modules/gateway/gateway.module';
+import { IdentityModule } from './modules/identity/identity.module';
+import { OriginationModule } from './modules/origination/origination.module';
 
 /**
- * Módulos del servicio (cada sub-dominio es un módulo extraíble):
- *  - modules/gateway      → auth JWT, routing, CORS
- *  - modules/identity     → applicants, OCR (mock), KYC
- *  - modules/origination  → saga de originación + timeline
- * Se importan aquí a medida que se implementen (Fase 1).
+ * Servicio 1 — borde + identidad + saga (inciso I).
+ *  - GatewayModule      → auth JWT, guard
+ *  - IdentityModule     → applicants, OCR, KYC
+ *  - OriginationModule  → saga (scoring → credit) + timeline
  */
 @Module({
-  imports: [],
+  imports: [DatabaseModule, GatewayModule, IdentityModule, OriginationModule],
   controllers: [HealthController],
-  providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationMiddleware).forRoutes('*');
+  }
+}
