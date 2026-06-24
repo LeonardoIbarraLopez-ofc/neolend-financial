@@ -1,5 +1,20 @@
 import { Kafka, type Producer, type Consumer } from 'kafkajs';
-import type { EventEnvelope } from '@neolend/ts-events';
+
+/**
+ * Envelope estándar de evento. Definición estructural local para evitar
+ * dependencia circular ts-common → ts-events.
+ * El tipo canónico está en @neolend/ts-events.
+ */
+interface EventEnvelope<T = unknown> {
+  eventId: string;
+  eventType: string;
+  occurredAt: string;
+  correlationId: string;
+  causationId?: string;
+  producer: string;
+  schemaVersion: number;
+  payload: T;
+}
 
 /**
  * Cliente compartido del bus de eventos (Redpanda, API Kafka).

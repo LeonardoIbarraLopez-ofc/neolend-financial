@@ -2,26 +2,187 @@ openapi: 3.0.3
 info:
   title: gateway-origination-svc
   version: 0.1.0
-  description: Gateway + Identidad/KYC + Saga de originación (inciso I).
+  description: |
+    Gateway de borde + Identidad/KYC + Saga de originación (Inciso I).
+    Puerto: 3331. Rol D2 — NeoLend Financial Corp.
 servers:
-  - url: http://localhost:8101/v1
+  - url: http://localhost:3331/v1
+    description: Desarrollo local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ProblemDetails:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        correlationId: { type: string }
+    Applicant:
+      type: object
+      properties:
+        applicantId: { type: string, format: uuid }
+        fullName: { type: string }
+        documentType: { type: string }
+        documentNumberEncrypted: { type: string }
+        documentNumberHash: { type: string }
+        kycStatus: { type: string, enum: [PENDING, VERIFIED, FAILED] }
+        createdAt: { type: string, format: date-time }
+    OcrResult:
+      type: object
+      properties:
+        extractedName: { type: string }
+        extractedDocNumber: { type: string }
+        confidence: { type: number }
+        processedAt: { type: string, format: date-time }
+    LoanApplication:
+      type: object
+      properties:
+        applicationId: { type: string, format: uuid }
+        correlationId: { type: string }
+        applicantId: { type: string, format: uuid }
+        requestedAmount: { type: number }
+        currency: { type: string }
+        termMonths: { type: integer }
+        status:
+          type: string
+          enum: [SUBMITTED, SCORING, DECIDING, APPROVED, MANUAL, REJECTED, FAILED]
+        timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              step: { type: string }
+              status: { type: string }
+              occurredAt: { type: string }
+              detail: { type: string }
+        scoreId: { type: string }
+        score: { type: integer }
+        riskBand: { type: string }
+        decisionId: { type: string }
+        creditId: { type: string }
+        approvedAmount: { type: number }
+        interestRate: { type: number }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+security:
+  - bearerAuth: []
+
 paths:
   /auth/login:
     post:
-      summary: Emite un JWT
-      responses: { '200': { description: token } }
+      summary: Emite un JWT con rol embebido
+      description: Endpoint público (no requiere token). Devuelve accessToken JWT.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, role]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 4 }
+                role:
+                  type: string
+                  enum: [applicant, analyst, investor, collector, regulator]
+      responses:
+        '200':
+          description: JWT emitido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  expiresIn: { type: string }
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
   /applicants:
     post:
-      summary: Crea solicitante
-      responses: { '201': { description: creado } }
+      summary: Crea un solicitante (cifra PII con AES-256)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, documentNumber, documentType]
+              properties:
+                fullName: { type: string }
+                documentNumber: { type: string }
+                documentType: { type: string, enum: [CC, CE, PASSPORT, NIT] }
+                phone: { type: string }
+                email: { type: string, format: email }
+      responses:
+        '201':
+          description: Solicitante creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Applicant' }
+
+  /applicants/{id}:
+    get:
+      summary: Consulta estado del solicitante (KYC)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Datos del solicitante
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Applicant' }
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
   /applicants/{id}/document:
     post:
-      summary: Sube documento (multipart) y dispara OCR (mock)
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: OCR ok } }
+      summary: Sube documento y dispara OCR (mock)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Resultado del OCR
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OcrResult' }
+
   /loan-applications:
     post:
       summary: Inicia solicitud de crédito (Saga)
+      description: |
+        Retorna 202 inmediatamente. La saga coordina scoring→decisión en background.
+        El cliente hace polling a pollUrl para obtener el estado.
       requestBody:
         required: true
         content:
@@ -31,13 +192,55 @@ paths:
               required: [applicantId, requestedAmount, termMonths]
               properties:
                 applicantId: { type: string, format: uuid }
-                requestedAmount: { type: number }
+                requestedAmount: { type: number, minimum: 1 }
                 currency: { type: string, default: USD }
-                termMonths: { type: integer }
+                termMonths: { type: integer, minimum: 1 }
       responses:
-        '202': { description: en proceso }
+        '202':
+          description: Solicitud en proceso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applicationId: { type: string, format: uuid }
+                  status: { type: string }
+                  pollUrl: { type: string }
+
   /loan-applications/{id}:
     get:
-      summary: Estado + progreso (timeline)
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: estado } }
+      summary: Estado + progreso (timeline) de la solicitud
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Estado y timeline de la solicitud
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoanApplication' }
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+  /health:
+    get:
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: Servicio activo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  status: { type: string }
+                  version: { type: string }
+                  uptimeSeconds: { type: integer }
+                  timestamp: { type: string }
