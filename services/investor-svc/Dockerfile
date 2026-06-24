@@ -7,9 +7,8 @@ COPY tsconfig.base.json ./
 COPY libs ./libs
 COPY services/investor-svc ./services/investor-svc
 
-RUN pnpm install --frozen-lockfile || pnpm install
-RUN pnpm --filter @neolend/ts-common --filter @neolend/ts-events build
-RUN pnpm --filter @neolend/investor-svc build
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @neolend/investor-svc... build
 
 EXPOSE 8105
 CMD ["node", "services/investor-svc/dist/main.js"]

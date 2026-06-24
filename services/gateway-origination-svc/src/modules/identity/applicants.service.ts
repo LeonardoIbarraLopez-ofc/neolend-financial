@@ -84,10 +84,9 @@ export class ApplicantsService {
   }
 
   private async getRaw(id: string) {
-    const { rows } = await this.pool.query(
-      `SELECT * FROM origination.applicants WHERE id = $1`,
-      [id],
-    );
+    const { rows } = await this.pool.query(`SELECT * FROM origination.applicants WHERE id = $1`, [
+      id,
+    ]);
     if (rows.length === 0) throw NotFound(`applicant ${id} no existe`);
     return rows[0];
   }

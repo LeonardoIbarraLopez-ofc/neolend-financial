@@ -7,9 +7,8 @@ COPY tsconfig.base.json ./
 COPY libs ./libs
 COPY services/compliance-svc ./services/compliance-svc
 
-RUN pnpm install --frozen-lockfile || pnpm install
-RUN pnpm --filter @neolend/ts-common --filter @neolend/ts-events build
-RUN pnpm --filter @neolend/compliance-svc build
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @neolend/compliance-svc... build
 
 EXPOSE 8106
 CMD ["node", "services/compliance-svc/dist/main.js"]

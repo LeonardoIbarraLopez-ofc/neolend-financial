@@ -7,9 +7,8 @@ COPY tsconfig.base.json ./
 COPY libs ./libs
 COPY services/credit-svc ./services/credit-svc
 
-RUN pnpm install --frozen-lockfile || pnpm install
-RUN pnpm --filter @neolend/ts-common --filter @neolend/ts-events build
-RUN pnpm --filter @neolend/credit-svc build
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @neolend/credit-svc... build
 
 EXPOSE 8103
 CMD ["node", "services/credit-svc/dist/main.js"]

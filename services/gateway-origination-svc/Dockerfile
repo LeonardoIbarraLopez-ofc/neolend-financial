@@ -9,9 +9,8 @@ COPY tsconfig.base.json ./
 COPY libs ./libs
 COPY services/gateway-origination-svc ./services/gateway-origination-svc
 
-RUN pnpm install --frozen-lockfile || pnpm install
-RUN pnpm --filter @neolend/ts-common --filter @neolend/ts-events build
-RUN pnpm --filter @neolend/gateway-origination-svc build
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @neolend/gateway-origination-svc... build
 
 EXPOSE 8080 8101
 CMD ["node", "services/gateway-origination-svc/dist/main.js"]

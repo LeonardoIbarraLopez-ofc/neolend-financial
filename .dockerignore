@@ -1,0 +1,33 @@
+# Reduce drásticamente el contexto de build (context: . = todo el repo).
+# Sin esto, Docker envía node_modules/.git/dist en CADA build de servicio,
+# causando layers enormes y tiempos de exportación de minutos.
+
+# Dependencias y artefactos (se regeneran dentro de la imagen)
+**/node_modules
+**/dist
+**/.vite
+**/coverage
+**/*.tsbuildinfo
+
+# Python
+**/__pycache__
+**/.venv
+**/.ruff_cache
+**/.pytest_cache
+
+# Control de versiones e historia
+.git
+.gitignore
+
+# Documentación y evidencia (no se necesitan en runtime)
+docs
+*.md
+*.MD
+
+# Datos locales / secretos / IDE
+.env
+keys/*.pem
+worm/*
+.vscode
+.idea
+*.DS_Store

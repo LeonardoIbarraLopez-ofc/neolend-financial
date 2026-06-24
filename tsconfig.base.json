@@ -12,11 +12,9 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@neolend/ts-common": ["libs/ts-common/src"],
-      "@neolend/ts-events": ["libs/ts-events/src"]
-    }
+    "resolveJsonModule": true
   }
 }
+// NOTA: sin "paths". Cada paquete resuelve @neolend/* vía node_modules (al dist
+// compilado de la lib). Usar "paths" a las fuentes inflaba el rootDir inferido y
+// anidaba la salida (dist/services/.../src/main.js en vez de dist/main.js).

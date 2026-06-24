@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m ruff check --fix services/scoring-svc)",
+      "Bash(python -m ruff check services/scoring-svc)",
+      "Bash(python -m py_compile services/scoring-svc/app/main.py)",
+      "Bash(pnpm format *)",
+      "Bash(pnpm format:check)",
+      "Bash(find services/gateway-origination-svc/dist -name \"main.js\")",
+      "Bash(ls services/gateway-origination-svc/dist)",
+      "Bash(bash /tmp/e2e.sh)",
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);v=json.loads\\(d['value']\\);print\\(' eventType:',v['eventType'],'| producer:',v['producer'],'| correlationId:',v['correlationId']\\)\")"
+    ]
+  }
+}

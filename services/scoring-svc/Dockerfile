@@ -1,11 +1,12 @@
 FROM python:3.12-slim
 WORKDIR /app
 
-# Instala dependencias primero (mejor caché)
+# Baseline (Fase 1): solo el runtime web. Las dependencias de ML
+# (scikit-learn, shap, numpy) y de infraestructura (redis, aiokafka) se
+# agregan cuando D3 implemente el modelo real y la integración del bus.
 COPY services/scoring-svc/pyproject.toml ./
 RUN pip install --no-cache-dir \
-    "fastapi>=0.110.0" "uvicorn[standard]>=0.29.0" "pydantic>=2.6.0" \
-    "redis>=5.0.0" "scikit-learn>=1.4.0" "shap>=0.45.0" "numpy>=1.26.0" "aiokafka>=0.10.0"
+    "fastapi>=0.110.0" "uvicorn[standard]>=0.29.0" "pydantic>=2.6.0"
 
 COPY services/scoring-svc/app ./app
 

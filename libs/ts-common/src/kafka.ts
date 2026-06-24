@@ -1,17 +1,11 @@
 import { Kafka, type Producer, type Consumer } from 'kafkajs';
 
 /**
- * Forma mínima del sobre estándar que necesita el bus (la definición completa
- * vive en @neolend/ts-events). Se mantiene local para no acoplar las libs.
+ * Restricción mínima: el bus solo necesita el correlationId para particionar.
+ * El tipo concreto del sobre vive en @neolend/ts-events; usando un genérico se
+ * evita acoplar ts-common con ts-events y se acepta cualquier envelope válido.
  */
-export interface EventEnvelope<T = unknown> {
-  eventId: string;
-  eventType: string;
-  correlationId: string;
-  producer: string;
-  payload: T;
-  [key: string]: unknown;
-}
+type WithCorrelation = { correlationId: string };
 
 /**
  * Cliente compartido del bus de eventos (Redpanda, API Kafka).
@@ -28,7 +22,7 @@ export class EventBus {
     this.kafka = new Kafka({ clientId: service, brokers });
   }
 
-  async publish<T>(topic: string, envelope: EventEnvelope<T>): Promise<void> {
+  async publish<E extends WithCorrelation>(topic: string, envelope: E): Promise<void> {
     this.producer ??= this.kafka.producer();
     await this.producer.connect();
     await this.producer.send({
@@ -38,10 +32,10 @@ export class EventBus {
   }
 
   /** Suscripción idempotente: el handler debe deduplicar por envelope.eventId. */
-  async subscribe<T>(
+  async subscribe<E>(
     topics: string[],
     groupId: string,
-    handler: (envelope: EventEnvelope<T>) => Promise<void>,
+    handler: (envelope: E) => Promise<void>,
   ): Promise<Consumer> {
     const consumer = this.kafka.consumer({ groupId });
     await consumer.connect();
@@ -51,7 +45,7 @@ export class EventBus {
     await consumer.run({
       eachMessage: async ({ message }) => {
         if (!message.value) return;
-        await handler(JSON.parse(message.value.toString()) as EventEnvelope<T>);
+        await handler(JSON.parse(message.value.toString()) as E);
       },
     });
     return consumer;

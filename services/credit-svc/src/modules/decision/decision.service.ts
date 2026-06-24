@@ -52,7 +52,11 @@ export class DecisionService {
       (!dto.partialData || dto.score >= 680)
     ) {
       outcome = 'AUTO_APPROVED';
-      reasons.push('amount<=500', 'score>=600', dto.partialData ? 'partial_but_strong' : 'full_data');
+      reasons.push(
+        'amount<=500',
+        'score>=600',
+        dto.partialData ? 'partial_but_strong' : 'full_data',
+      );
     } else {
       outcome = 'MANUAL_PENDING';
       if (dto.requestedAmount > DecisionService.MAX_AUTO_AMOUNT) reasons.push('amount>500');

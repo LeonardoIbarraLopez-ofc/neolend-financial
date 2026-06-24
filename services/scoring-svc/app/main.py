@@ -9,10 +9,9 @@ breaker + caché Redis, modelo ONNX con blue/green, módulos altdata/fraud reale
 y publicación del evento scoring.score.completed.
 """
 import hashlib
-import os
 import random
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -55,7 +54,7 @@ def health() -> dict:
         "service": "scoring-svc",
         "status": "ok",
         "version": "0.1.0",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -96,7 +95,7 @@ def create_score(req: ScoreRequest) -> dict:
         "partialData": partial,
         "fraud": {"decision": "PASS", "fraudScore": round(random.uniform(0, 0.2), 3)},
         "explanation": {"shap": shap, "baseValue": base},
-        "computedAt": datetime.now(timezone.utc).isoformat(),
+        "computedAt": datetime.now(UTC).isoformat(),
     }
     _SCORES[score_id] = result
     return result

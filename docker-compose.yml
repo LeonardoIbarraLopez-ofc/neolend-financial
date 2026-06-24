@@ -19,7 +19,9 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-neolend}']
+      # -d postgres: sondear la base de mantenimiento existente evita el ruido
+      # "FATAL: database \"neolend\" does not exist" (pg_isready usa el user como db por defecto).
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-neolend} -d postgres']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -53,6 +55,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  # Crea los topics una vez (evita el "not leader" del auto-create en el primer produce)
+  redpanda-init:
+    image: redpandadata/redpanda:v24.1.1
+    depends_on:
+      redpanda: { condition: service_healthy }
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - >
+        rpk topic create origination.events scoring.events credit.events
+        disbursement.events collections.events gamification.events
+        --brokers redpanda:9092 -r 1 -p 1 || true
+    restart: 'no'
 
   # ---------- Mocks locales (sustituyen proveedores externos) ----------
   bureau-soap-mock:
@@ -92,6 +107,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redpanda: { condition: service_healthy }
+      redpanda-init: { condition: service_completed_successfully }
 
   scoring-svc:
     build:

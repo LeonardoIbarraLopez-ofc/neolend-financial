@@ -1,10 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
-import {
-  createLogger,
-  EventBus,
-  NotFound,
-} from '@neolend/ts-common';
+import { createLogger, EventBus, NotFound } from '@neolend/ts-common';
 import { EventTypes, makeEnvelope, Topics } from '@neolend/ts-events';
 import { PG_POOL } from '../../common/database';
 import { ApplicantsService } from '../identity/applicants.service';
@@ -43,7 +39,11 @@ export class OriginationService {
     // Ejecuta la saga en segundo plano (respuesta 202 inmediata).
     setImmediate(() => this.runSaga(applicationId, dto).catch((err) => log.error({ err }, 'saga')));
 
-    return { applicationId, status: 'PROCESSING', pollUrl: `/v1/loan-applications/${applicationId}` };
+    return {
+      applicationId,
+      status: 'PROCESSING',
+      pollUrl: `/v1/loan-applications/${applicationId}`,
+    };
   }
 
   private async runSaga(applicationId: string, dto: CreateApplicationDto) {
