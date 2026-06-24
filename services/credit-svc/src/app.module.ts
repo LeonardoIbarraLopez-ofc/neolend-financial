@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { HealthController } from './health.controller';
 
 /**
@@ -11,7 +12,14 @@ import { HealthController } from './health.controller';
  *  - modules/ledger         → contabilidad double-entry
  */
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'better-sqlite3',
+      database: process.env.CREDIT_DB_PATH ?? './data/credit.sqlite',
+      entities: [],
+      synchronize: true,
+    }),
+  ],
   controllers: [HealthController],
   providers: [],
 })

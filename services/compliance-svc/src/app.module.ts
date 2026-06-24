@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { HealthController } from './health.controller';
 
 /**
@@ -9,7 +10,14 @@ import { HealthController } from './health.controller';
  * Consume TODOS los eventos relevantes para la bitácora inmutable.
  */
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'better-sqlite3',
+      database: process.env.COMPLIANCE_DB_PATH ?? './data/compliance.sqlite',
+      entities: [],
+      synchronize: true,
+    }),
+  ],
   controllers: [HealthController],
   providers: [],
 })

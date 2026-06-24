@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { HealthController } from './health.controller';
 
 /**
@@ -8,7 +9,14 @@ import { HealthController } from './health.controller';
  *  - modules/gamification  → cursos, rewards, bonus de tasa (inciso VIII)
  */
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'better-sqlite3',
+      database: process.env.SERVICING_DB_PATH ?? './data/servicing.sqlite',
+      entities: [],
+      synchronize: true,
+    }),
+  ],
   controllers: [HealthController],
   providers: [],
 })

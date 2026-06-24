@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { HealthController } from './health.controller';
 
 /**
@@ -8,7 +9,14 @@ import { HealthController } from './health.controller';
  *  - modules/stream      → WebSocket /portfolio/stream (tiempo real)
  */
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'better-sqlite3',
+      database: process.env.INVESTOR_DB_PATH ?? './data/investor.sqlite',
+      entities: [],
+      synchronize: true,
+    }),
+  ],
   controllers: [HealthController],
   providers: [],
 })
