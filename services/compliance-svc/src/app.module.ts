@@ -1,5 +1,9 @@
 import { Module } from '@nestjs/common';
 import { HealthController } from './health.controller';
+import { DatabaseModule } from './common/database.module';
+import { SigningModule } from './modules/signing/signing.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { RegulatorModule } from './modules/regulator/regulator.module';
 
 /**
  * Módulos (sub-dominios extraíbles):
@@ -9,7 +13,7 @@ import { HealthController } from './health.controller';
  * Consume TODOS los eventos relevantes para la bitácora inmutable.
  */
 @Module({
-  imports: [],
+  imports: [DatabaseModule, SigningModule, AuditModule, RegulatorModule],
   controllers: [HealthController],
   providers: [],
 })
